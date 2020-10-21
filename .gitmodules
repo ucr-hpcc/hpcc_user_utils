@@ -1,0 +1,15 @@
+[submodule "BestSlurmPartition"]
+	path = BestSlurmPartition
+	url = https://github.com/mmshad/BestSlurmPartition.git
+[submodule "scalc"]
+	path = scalc
+	url = https://github.com/fasrc/scalc.git
+[submodule "slurm_showq"]
+	path = slurm_showq
+	url = https://github.com/fasrc/slurm_showq.git
+[submodule "slurm_utils"]
+	path = slurm_utils
+	url = https://github.com/fasrc/slurm_utils.git
+[submodule "spart"]
+	path = spart
+	url = https://github.com/stanford-rc/spart.git

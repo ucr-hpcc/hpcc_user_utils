@@ -1,0 +1,4 @@
+#!/bin/bash -l
+
+for suser in $(squeue -t R -h -o '%u' | sort | uniq); do echo $(echo $(squeue -t R -u $suser -h -o '%C' | tr '\n' '+' | sed 's/\+$//g') | bc) $suser; done | sort -n
+

@@ -1,0 +1,41 @@
+#!/bin/bash
+
+############################################################
+# Search for module/library/package under common locations #
+############################################################
+#
+# For additional support, create bash function that evals result from modulecmd
+#eval `/usr/bin/modulecmd bash $*` || echo -e 'Usage::\n\tiigb_modules command [arguments ...]'
+#
+
+# Check Arguments
+EXPECTED_ARGS=1
+E_BADARGS=65
+
+if [ $# -ne $EXPECTED_ARGS ]
+then
+  echo -e "Usage:\n\t`basename $0` SOFTWARE_NAME"
+  echo -e "Example:\n\t`basename $0` samtools"
+  exit $E_BADARGS
+fi
+
+SOFT_NAME=$1
+
+echo -e "\n\n====== ${HPCC_MODULES} Env Modules ======"
+OUTPUT=$(module -t avail 2>&1 | grep -i ${SOFT_NAME})
+if [[ ! -z $OUTPUT ]]; then
+    echo "$OUTPUT" | grep -i --color ${SOFT_NAME}
+fi
+    
+echo -e "\n\n====== $(which Rscript) Libraries ======"
+OUTPUT=$(Rscript -e 'installed.packages()[,c("Package", "Version")]' 2>/dev/null | grep -i ${SOFT_NAME})
+if [[ ! -z $OUTPUT ]]; then
+    echo "$OUTPUT" | grep -i --color ${SOFT_NAME}
+fi
+
+echo -e "\n\n====== $(which pip) Packages ======"
+OUTPUT=$(python -m "pip" "list" "--format=columns" 2>/dev/null | grep -i ${SOFT_NAME})
+if [[ ! -z $OUTPUT ]]; then
+    echo "$OUTPUT" | grep -i --color ${SOFT_NAME}
+fi
+

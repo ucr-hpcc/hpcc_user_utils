@@ -1,0 +1,9 @@
+#!/bin/bash
+
+HN=$(hostname | cut -d. -f1)
+if [[ ! $HN == 'owl' && ! $HN == 'pigeon' && ! $HN == 'penguin' && ! $HN == 'pelican' ]]; then
+    echo "Please do not run TMUX on compute nodes.";
+else
+    /usr/bin/tmux $@
+fi
+

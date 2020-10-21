@@ -1,0 +1,76 @@
+#!/bin/sh
+
+# This script mounts an encfs filesystem, starts a shell in the mounted
+# directory, and then unmounts the filesystem when the shell exits.
+# This is an equivalent of the cfssh utility for cfs contributed by David Rosenstrauch.
+# Modified by Jordan Hayes for gocryptfs on HPCC @ UCR
+
+canonicalize() {
+	cd "$1"
+	pwd
+}
+
+
+if [ -z "$1" -o "$1" = "-h" ]; then
+	echo Usage: gocryptfssh encrypted_directory [unencrypted-directory [-allow_other]]
+	echo "  -allow_other   mount the unencrypted directory as public"
+	exit 1
+fi
+
+enc_dir=$1
+unenc_dir_given=false
+mount_public=false
+shared_storage=false
+if [ ! -z "$2" ]; then
+    unenc_dir_given=true
+    unenc_dir=$2
+    for arg in "$@" ; do
+	if [ "$arg" = "-allow_other" ]; then
+	    mount_public=true
+	fi
+	if [ "$arg" = "-sharedstorage" ]; then
+	    shared_storage=true
+	fi
+    done
+else
+    unenc_dir=.$RANDOM.$RANDOM
+fi
+
+if [ ! -d "$enc_dir" ]; then
+    mkdir -p $enc_dir
+fi
+if [ ! -d "$unenc_dir" ]; then
+    mkdir -p $unenc_dir
+fi
+
+enc_dir=$(canonicalize "$enc_dir")
+unenc_dir=$(canonicalize "$unenc_dir")
+
+options=""
+if $unenc_dir_given; then
+    if $mount_public; then
+	options="-o -allow_other"
+    fi
+    if $shared_storage; then
+	options="-o $options -sharedstorage"
+    fi
+fi
+
+# Attach the directory and change into it
+if gocryptfs $enc_dir $unenc_dir $options; then :; else
+    echo "gocryptfs failed"
+    if [ ! -z $unenc_dir ]; then
+      rmdir $unenc_dir
+    fi
+    exit 1
+fi
+if ! $unenc_dir_given; then
+    chmod 700 $unenc_dir
+fi
+echo "Directory is $unenc_dir"
+orig_dir=$(pwd)
+cd $unenc_dir
+
+# Set the shell up
+exec /bin/sh -c "$SHELL ; cd $orig_dir ; fusermount -u $unenc_dir ; if ! $unenc_dir_given; then rmdir $unenc_dir; fi"
+

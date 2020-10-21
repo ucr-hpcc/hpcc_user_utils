@@ -1,0 +1,7 @@
+#!/bin/bash
+
+source /etc/profile.d/modules.sh
+module load python/2.7.5
+
+IIGB_HOME=$(dirname $0)/../
+$IIGB_HOME/iigb_portal/iigb_portal_widgets/scripts/user_details.sh 2>/dev/null

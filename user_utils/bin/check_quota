@@ -1,0 +1,20 @@
+#!/bin/bash -l
+
+if [[ "$HOSTNAME" == "rstudio" ]]; then
+     SUDO="sudo"
+else
+     SUDO=
+fi
+
+if [ "$1" == 'home' ]; then
+    $SUDO mmlsquota --block-size=auto home
+elif [ "$1" == 'bigdata' ];  then
+    PGROUP=$(id -g -n ${USER})
+    if [ -d "/bigdata/${PGROUP}" ]; then
+        $SUDO mmlsquota --block-size=auto -j ${PGROUP} bigdata
+    else
+        echo -e "Please contact support@hpcc.ucr.edu in order to purchase bigdata storage"
+    fi
+else
+    echo -e 'Usage::\n\t\tcheck_quota home\n\tOR\n\t\tcheck_quota bigdata'
+fi

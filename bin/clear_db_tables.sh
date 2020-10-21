@@ -1,0 +1,1 @@
+../user_utils/bin/clear_db_tables.sh

@@ -1,0 +1,2 @@
+#!/bin/bash -l
+Rscript /opt/linux/centos/7.x/x86_64/pkgs/iigb_utilities/1/qstatMonitor/qstatMonitor.R pdf

@@ -1,0 +1,7 @@
+#!/usr/bin/env python
+
+import pip
+#print(pip.__version__)
+for pkg in pip.get_installed_distributions():
+    print (pkg.key,pkg.version)
+#help('modules')

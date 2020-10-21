@@ -1,0 +1,187 @@
+#!/bin/bash -l
+
+set -e
+
+function help {
+SCRIPT=$(basename $0)
+cat <<EOF
+Usage: $SCRIPT COMMAND OPTIONS
+
+    [COMMANDS]
+    list                          - List all encrypted data directories and access points
+    create DATA_LOC DATA_DIR      - Open new access point to data directory (unencrypt)
+    open   DATA_LOC DATA_DIR TYPE - Open new access point to data directory (unencrypt)
+    close  DATA_DIR               - Close existing access point to data directory (re-encrypt)
+    quit                          - Close all access points to all data directories
+
+    [OPTIONS]
+    DATA_LOC - Must be "home", "bigdata" or "shared"
+    DATA_DIR - The name of the data directory
+    TYPE     - Must be "ro" (read-only) or "rw" (read-write)
+
+Examples:
+       $SCRIPT list
+       $SCRIPT create bigdata privatedata1
+       $SCRIPT open bigdata privatedata1 ro
+       $SCRIPT close privatedata1
+       $SCRIPT quit
+
+EOF
+exit 1
+}
+
+# Check number of args
+if [[ "$#" -gt 4 ]] || [[ "$#" -lt 1 ]]; then
+    help
+fi
+
+# Load module for variable names and software
+module load gocryptfs
+
+# Capture args
+SUBCMD=$1
+
+# List all data dirs
+if [[ "${SUBCMD}" == "list" ]]; then
+    if [[ "$#" -ne 1 ]]; then
+        help
+    fi
+
+    if [[ -d "${HOME_ENCRYPTED}" ]]; then
+        echo -e "\n##################################################"
+        echo -e "# HOME ENCRYPTED\n# ${HOME_ENCRYPTED}"
+        echo "##################################################"
+        ls ${HOME_ENCRYPTED}
+        echo "=================================================="
+    else
+        echo -e "\n##################################################"
+        echo -e "# HOME ENCRYPTED\n# ${HOME_ENCRYPTED} (does not exist)"
+        echo "##################################################"
+        echo "=================================================="
+    fi
+
+    if [[ -d "${BIGDATA_ENCRYPTED}" ]]; then
+        echo -e "\n##################################################"
+        echo -e "# BIGDATA ENCRYPTED\n# ${BIGDATA_ENCRYPTED}"
+        echo "##################################################"
+        ls ${BIGDATA_ENCRYPTED}
+        echo "=================================================="
+    else
+        echo -e "\n##################################################"
+        echo -e "# BIGDATA ENCRYPTED\n# ${BIGDATA_ENCRYPTED} (does not exist)"
+        echo "##################################################"
+        echo "=================================================="
+    fi
+
+    if [[ -d "${SHARED_ENCRYPTED}" ]]; then
+        echo -e "\n##################################################"
+        echo -e "# SHARED ENCRYPTED\n# ${SHARED_ENCRYPTED}"
+        echo "##################################################"
+        ls $SHARED_ENCRYPTED
+        echo "=================================================="
+    else
+        echo -e "\n##################################################"
+        echo -e "# SHARED ENCRYPTED\n# ${SHARED_ENCRYPTED} (does not exist)"
+        echo "##################################################"
+        echo "=================================================="
+    fi
+
+    if [[ -d "${UNENCRYPTED}" ]]; then
+        echo -e "\n##################################################"
+        echo -e "# ACCESS POINTS\n# ${UNENCRYPTED}"
+        echo "##################################################"
+        ls ${UNENCRYPTED}
+        echo "=================================================="
+    else
+        echo -e "\n##################################################"
+        echo -e "# ACCESS POINTS\n# ${UNENCRYPTED} (does not exist)"
+        echo "##################################################"
+        echo "=================================================="
+    fi
+
+    echo
+    exit 0
+fi
+
+if [[ "${SUBCMD}" == "create" ]]; then
+    # Check args
+    if [[ "$#" -ne 3 ]]; then
+        help
+    fi
+
+    # Collect vars
+    declare -A DATA_LOCS=( ["home"]="${HOME_ENCRYPTED}" ["bigdata"]="${BIGDATA_ENCRYPTED}" ["shared"]="${SHARED_ENCRYPTED}" )
+    DATA_LOC="${DATA_LOCS[$2]}"
+    DATA_DIR=$3
+
+    # Create empty dir
+    mkdir -p ${DATA_LOC}/${DATA_DIR}
+
+    # Intialize encryption on empty data dir
+    gocryptfs -aessiv -init ${DATA_LOC}/${DATA_DIR}
+
+    # Done
+    exit 0
+fi
+
+# Mount
+if [[ "${SUBCMD}" == "open" ]]; then
+    # Check args
+    if [[ "$#" -ne 4 ]]; then
+        help
+    fi
+
+    # Collect vars
+    declare -A DATA_LOCS=( ["home"]="${HOME_ENCRYPTED}" ["bigdata"]="${BIGDATA_ENCRYPTED}" ["shared"]="${SHARED_ENCRYPTED}" )
+    DATA_LOC="${DATA_LOCS[$2]}"
+    DATA_DIR=$3
+
+    # Check mounting options
+    if [[ ! "$4" == "ro" ]] && [[ ! $4 == "rw" ]]; then
+        help
+    else
+        declare -A TYPES=( ["ro"]="-ro -sharedstorage" ["rw"]="-rw -sharedstorage" )
+        OPTS="${TYPES[$4]}"
+    fi
+
+    # Check if directory exists then mount via gocryptfs
+    if [[ -d "${DATA_LOC}/${DATA_DIR}" ]]; then
+        echo "Unencrypting ${DATA_LOC}/${DATA_DIR}..."
+        if [[ ! -d "${UNENCRYPTED}/${DATA_DIR}" ]]; then 
+            mkdir -p ${UNENCRYPTED}/${DATA_DIR}
+            gocryptfs $OPTS ${DATA_LOC}/${DATA_DIR} ${UNENCRYPTED}/${DATA_DIR}
+            echo "Access point created at ${UNENCRYPTED}/${DATA_DIR}"
+        else
+            echo "Access point already exists ${UNENCRYPTED}/${DATA_DIR}"
+        fi
+    else
+        echo "Directory \"${DATA_LOC}/${DATA_DIR}\" not found"
+    fi
+    exit 0
+fi
+
+# Unmount and remove
+if [[ "${SUBCMD}" == "close" ]]; then
+    if [[ "$#" -ne 2 ]]; then
+        help
+    fi
+
+    DATA_DIR=$2
+    if [[ -d ${UNENCRYPTED}/${DATA_DIR} ]]; then
+        fusermount -u ${UNENCRYPTED}/${DATA_DIR}
+        rmdir ${UNENCRYPTED}/${DATA_DIR}
+    else
+        echo "Access point \"${UNENCRYPTED}/${DATA_DIR}\" not found"
+    fi
+    exit 0
+fi
+
+# Umount and remove all empty dirs
+if [[ "${SUBCMD}" == "quit" ]]; then
+    for dir in $(ls ${UNENCRYPTED}); do
+        fusermount -u ${UNENCRYPTED}/$dir
+        rmdir ${UNENCRYPTED}/$dir
+    done
+    exit 0
+fi
+
