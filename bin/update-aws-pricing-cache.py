@@ -4,7 +4,7 @@
 ####### Load modules ##########
 import os, sys, json, time, requests
 
-AWSPricingCacheFile = '/rhome/forsythc/repos/hpcc_cloud/aws/cfncluster/scripts/aws-price-cache-file'
+AWSPricingCacheFile = 'aws-price-cache-file'
 
 def UpdateAwsPricingCache(AWSPricingCacheFile):
     response = requests.get('https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/us-west-1/index.json')
