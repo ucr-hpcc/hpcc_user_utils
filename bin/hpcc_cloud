@@ -1,8 +1,0 @@
-#!/bin/bash -l
-
-
-module unload python
-
-hpcc_cloud.py $@
-
-
