@@ -1,5 +1,7 @@
 #!/bin/bash -l
 
+module load gocryptfs
+
 set -e
 
 function help {
@@ -155,7 +157,8 @@ if [[ "${SUBCMD}" == "open" ]]; then
             echo "Access point already exists ${UNENCRYPTED}/${DATA_DIR}"
         fi
     else
-        echo "Directory \"${DATA_LOC}/${DATA_DIR}\" not found"
+        echo "ERROR: Directory \"${DATA_LOC}/${DATA_DIR}\" not found"
+        exit 1
     fi
     exit 0
 fi
@@ -168,19 +171,38 @@ if [[ "${SUBCMD}" == "close" ]]; then
 
     DATA_DIR=$2
     if [[ -d ${UNENCRYPTED}/${DATA_DIR} ]]; then
-        fusermount -u ${UNENCRYPTED}/${DATA_DIR}
-        rmdir ${UNENCRYPTED}/${DATA_DIR}
+        OFILES=$(/sbin/lsof +D ${UNENCRYPTED}/${DATA_DIR} || cat /dev/null)
+        NUM_OFS=$(echo -e "$OFILES" | wc -l)
+        if [[ ${NUM_OFS} -le 1 ]]; then
+            if [[ ${NUM_OFS} -eq 0 ]]; then
+                fusermount -u ${UNENCRYPTED}/${DATA_DIR}
+            fi
+            rmdir ${UNENCRYPTED}/${DATA_DIR}
+        else
+            echo -e "$OFILES"
+            echo -e "\e[31m\e[5m****\e[25m All of the above processes must terminate before closing access point ${DATA_DIR} \e[5m****\e[25m\e[0m"
+        fi
     else
-        echo "Access point \"${UNENCRYPTED}/${DATA_DIR}\" not found"
+        echo "ERROR: Access point \"${UNENCRYPTED}/${DATA_DIR}\" not found"
+        exit 1
     fi
     exit 0
 fi
 
 # Umount and remove all empty dirs
 if [[ "${SUBCMD}" == "quit" ]]; then
-    for dir in $(ls ${UNENCRYPTED}); do
-        fusermount -u ${UNENCRYPTED}/$dir
-        rmdir ${UNENCRYPTED}/$dir
+    for dir in $(find ${UNENCRYPTED}/* -maxdepth 0 -type d -printf '%f\n'); do
+        OFILES=$(/sbin/lsof +D ${UNENCRYPTED}/$dir || cat /dev/null)
+        NUM_OFS=$(echo -e "$OFILES" | wc -l)
+        if [[ ${NUM_OFS} -le 1 ]]; then
+            if [[ ${NUM_OFS} -eq 0 ]]; then
+                fusermount -u ${UNENCRYPTED}/$dir
+            fi
+            rmdir ${UNENCRYPTED}/$dir
+        else
+            echo -e "$OFILES"
+            echo -e "\e[31m\e[5m****\e[25m All of the above processes must terminate before closing access point ${dir} \e[5m****\e[25m\e[0m"
+        fi
     done
     exit 0
 fi
