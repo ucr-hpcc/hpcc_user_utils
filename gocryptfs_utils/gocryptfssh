@@ -5,6 +5,10 @@
 # This is an equivalent of the cfssh utility for cfs contributed by David Rosenstrauch.
 # Modified by Jordan Hayes for gocryptfs on HPCC @ UCR
 
+# Load software
+source /etc/profile.d/modules.sh
+module load gocryptfs
+
 canonicalize() {
 	cd "$1"
 	pwd
@@ -33,7 +37,7 @@ if [ ! -z "$2" ]; then
 	fi
     done
 else
-    unenc_dir=.$RANDOM.$RANDOM
+    unenc_dir=${UNENCRYPTED}/$(basename $enc_dir)
 fi
 
 if [ ! -d "$enc_dir" ]; then
