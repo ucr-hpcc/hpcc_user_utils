@@ -1,0 +1,20 @@
+#!/bin/bash
+
+function cputype {
+    declare -A CPU_TYPES=( ["E5-2683"]="intel" ["6376"]="amd" ["5220R"]="xeon" ["7502"]="ryzen" ["E5-2630"]="gpu" ["E5-2650"]="gpu" ["E5-4620"]="highmem" ["6320"]="head")
+
+    TYPE=$(lscpu | grep -Po '^Model name:\K.*')
+
+    for CPU_TYPE in "${!CPU_TYPES[@]}"; do
+        #echo "DEBUG: Checking $CPU_TYPE"
+        echo $TYPE | grep $CPU_TYPE &> /dev/null
+        if [[ $? -eq 0 ]]; then
+            echo ${CPU_TYPES[$CPU_TYPE]}
+            exit 0
+        fi
+    done
+
+    >&2 echo -e "ERROR: Unknown CPU type $TYPE"
+    exit 1
+}
+cputype
