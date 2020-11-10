@@ -1,0 +1,9 @@
+#!/bin/bash -l
+
+GUSERS=''
+for user in $(getent group gaussian | cut -d: -f4 | tr "," " "); do
+    GUSERS+="\t$user\t|"
+done
+GUSERS=$(echo $GUSERS|sed 's/|$//g')
+user_details | grep '^True' | awk {'print $2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8'} | grep -P "$GUSERS" | tee ~/gaussian_users.csv
+echo -e "\nCreated CSV file ${HOME}/gaussian_users.csv"
