@@ -1,6 +1,6 @@
 #!/bin/bash -l
 
-if [[ "$HOSTNAME" == "rstudio" ]]; then
+if [[ "$HOSTNAME" == "rstudio" ]] || [[ "$HOSTNAME" == "jupyter" ]]; then
      SUDO="sudo"
 else
      SUDO=
