@@ -7,7 +7,7 @@ else
 fi
 
 if [ "$1" == 'home' ]; then
-    $SUDO mmlsquota --block-size=auto home
+    $SUDO mmlsquota --block-size=auto -u $USER home
 elif [ "$1" == 'bigdata' ];  then
     PGROUP=$(id -g -n ${USER})
     if [ -d "/bigdata/${PGROUP}" ]; then
