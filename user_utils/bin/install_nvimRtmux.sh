@@ -31,7 +31,14 @@ fi
 cp nvimRtmux/.tmux.conf .
 echo "Moved new .tmux.conf file to home and created backup (.tmux.conf_bak) of existing one."
 
-## 3. .config directory
+## 3. .Rprofile file
+if [ -f .Rprofile ]; then
+    mv .Rprofile .Rprofile_bak
+fi
+cp nvimRtmux/.Rprofile .
+echo "Moved new .Rprofile file to home and created backup (.Rprofile_bak) of existing one."
+
+## 4. .config directory
 if [ -f .config ]; then
     mv .config .config_bak
 fi
@@ -43,5 +50,5 @@ rm nvimRtmux.zip
 rm -rf nvimRtmux
 
 ## In case someone wants to undo changes here are some instructions
-printf "To undo changes, run: \n\tmv .bashrc .bashrc_bak2; mv .bashrc_bak .bashrc;  mv .tmux.conf .tmux.conf_bak2; mv .tmux.conf_bak .tmux.conf; mv .config .config_bak2; mv .config_bak .config \n"
+printf "To undo changes, run: \n\tmv .bashrc .bashrc_bak2; mv .bashrc_bak .bashrc; mv .tmux.conf .tmux.conf_bak2; mv .tmux.conf_bak .tmux.conf; mv .Rprofile .Rprofile_bak2; mv .Rprofile_bak .Rprofile; mv .config .config_bak2; mv .config_bak .config \n"
 
