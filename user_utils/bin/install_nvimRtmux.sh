@@ -13,7 +13,7 @@ fi
 
 ## Download and unzip this file to your home on biocluster
 cd ~/
-cp $(basename $0)/../share/nvimRtmux.zip .
+cp $(dirname $(realpath $0))/../share/nvimRtmux.zip .
 unzip nvimRtmux.zip > /dev/null 2>&1
 
 ## Copy the following files/dirs from ~/nvimRtmux and make backups of existing versions
