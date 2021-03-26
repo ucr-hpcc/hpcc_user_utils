@@ -1,6 +1,7 @@
 #!/bin/bash -l
 
-source /etc/profile.d/hpcc_modules.sh
+module purge
+module load iigb_utilities
 module load R/3.6.0
 
 SCRIPT=$(which $(basename $0))
