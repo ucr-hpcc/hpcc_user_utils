@@ -1,6 +1,6 @@
 #!/bin/bash -l
 
-source /etc/profile.d/modules.sh
+source /etc/profile.d/hpcc_modules.sh
 module load R/3.6.0
 
 SCRIPT=$(which $(basename $0))
