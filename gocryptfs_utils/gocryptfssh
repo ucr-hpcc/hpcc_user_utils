@@ -6,7 +6,7 @@
 # Modified by Jordan Hayes for gocryptfs on HPCC @ UCR
 
 # Load software
-source /etc/profile.d/modules.sh
+source /etc/profile.d/hpcc_modules.sh
 module load gocryptfs
 
 canonicalize() {
