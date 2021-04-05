@@ -172,12 +172,12 @@ if [[ "${SUBCMD}" == "close" ]]; then
     DATA_DIR=$2
     if [[ -d ${UNENCRYPTED}/${DATA_DIR} ]]; then
         OFILES=$(/sbin/lsof +D ${UNENCRYPTED}/${DATA_DIR} || cat /dev/null)
-        NUM_OFS=$(echo -e "$OFILES" | wc -l)
+        NUM_OFS=$(echo -e "$OFILES" | sed '/^$/d' | wc -l)
         if [[ ${NUM_OFS} -le 1 ]]; then
             if [[ ${NUM_OFS} -eq 0 ]]; then
                 fusermount -u ${UNENCRYPTED}/${DATA_DIR}
             fi
-            rmdir ${UNENCRYPTED}/${DATA_DIR}
+            rmdir ${UNENCRYPTED}/${DATA_DIR} && echo -e "Encrypted storage ${DATA_DIR} unmounted successfully"
         else
             echo -e "$OFILES"
             echo -e "\e[31m\e[5m****\e[25m All of the above processes must terminate before closing access point ${DATA_DIR} \e[5m****\e[25m\e[0m"
@@ -193,12 +193,12 @@ fi
 if [[ "${SUBCMD}" == "quit" ]]; then
     for dir in $(find ${UNENCRYPTED}/* -maxdepth 0 -type d -printf '%f\n'); do
         OFILES=$(/sbin/lsof +D ${UNENCRYPTED}/$dir || cat /dev/null)
-        NUM_OFS=$(echo -e "$OFILES" | wc -l)
+        NUM_OFS=$(echo -e "$OFILES" | sed '/^$/d' | wc -l)
         if [[ ${NUM_OFS} -le 1 ]]; then
             if [[ ${NUM_OFS} -eq 0 ]]; then
                 fusermount -u ${UNENCRYPTED}/$dir
             fi
-            rmdir ${UNENCRYPTED}/$dir
+            rmdir ${UNENCRYPTED}/$dir && echo -e "Encrypted storage ${dir} unmounted successfully"
         else
             echo -e "$OFILES"
             echo -e "\e[31m\e[5m****\e[25m All of the above processes must terminate before closing access point ${dir} \e[5m****\e[25m\e[0m"
@@ -206,4 +206,5 @@ if [[ "${SUBCMD}" == "quit" ]]; then
     done
     exit 0
 fi
+
 
