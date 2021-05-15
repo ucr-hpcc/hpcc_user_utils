@@ -1,0 +1,10 @@
+#!/bin/bash
+
+export HPCC_MODULES=/opt/linux/centos/7.x/x86_64/pkgs
+source /usr/share/init/profile.sh
+source /etc/profile.d/conda.sh
+conda_init
+
+module unload python miniconda2 miniconda3 anaconda2 anaconda3
+module load $1
+conda activate $2
