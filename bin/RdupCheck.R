@@ -18,6 +18,7 @@ if ( length(dups) > 0 ){
   cat('\n\t',libPath1,"\n[N/y]: ")
   delPkgs <- readLines("stdin",n=1);
   if ( delPkgs == 'y' || delPkgs == 'Y' ){
+      remove.packages(dups,libPath1)
       cat("\n\tDuplicates deleted\n")
   } else {
       cat("\n\tNOT deleting\n")
