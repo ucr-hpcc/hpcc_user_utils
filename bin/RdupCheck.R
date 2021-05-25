@@ -23,4 +23,6 @@ if ( length(dups) > 0 ){
   } else {
       cat("\n\tNOT deleting\n")
   }
+} else {
+    cat("\n\n\tNo Duplicates found\n")
 }
