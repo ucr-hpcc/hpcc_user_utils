@@ -1,14 +1,13 @@
-#!/bin/bash -l
+#!/bin/bash
 
-module purge
-module load iigb_utilities
-module load R/3.6.0
+# Load modules
+export HPCC_MODULES=/opt/linux/centos/7.x/x86_64/pkgs
+source /usr/share/init/profile.sh && module purge
+source /etc/profile.d/conda.sh
+module load miniconda2
+conda_init
 
-SCRIPT=$(which $(basename $0))
+conda activate python3
+SCRIPT_HOME=$(dirname $(realpath $0))
 
-if [ "$#" -gt 0 ]; then
-    Rscript $(dirname $SCRIPT)/../jobMonitor/jobMonitor.R $@
-else
-    Rscript $(dirname $SCRIPT)/../jobMonitor/jobMonitor.R pdf
-fi
-
+${SCRIPT_HOME}/jobMonitor.py $@
