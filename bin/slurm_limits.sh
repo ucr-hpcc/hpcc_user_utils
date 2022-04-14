@@ -7,21 +7,18 @@ echo -e "==============="
 echo "Slurm Limits"
 echo -e "==============="
 
-#for LIMIT in $(sacctmgr show account $SGROUP format=partition,grptres%30 --ass --noheader | sed "s/$SGROUP.*//g" | sed "s/\sgpu.*//g" | sort | uniq); do
-#for LIMIT in $(sacctmgr show account $SGROUP format=partition,grptres%30 --ass --noheader | sed "s/\sgpu.*//g" | sort | uniq); do
-for LIMIT in $(sacctmgr show account $SGROUP format=partition,grptres%30,user%30 --ass --noheader | grep -P "$USER\s*$|gpu\=" | sed "s/\s*$USER\s*//g" | grep -v '^\s*gpu\s*$' | sort | uniq); do
+echo -e "\tGroup Limits"
+echo -e "\t---------------"
+for LIMIT in $(sacctmgr show account $SGROUP format=grptres%30 --ass --noheader | grep "gpu=" | sort | uniq); do
     TRIM_LIMIT=$(echo $LIMIT | sed 's/ //g')
-    echo $TRIM_LIMIT | grep 'gres' &> /dev/null
-    EXIT=$?
-    if [[ $EXIT -eq 0 ]]; then
-        echo -e "\tGroup Limits"
-        echo -e "\t---------------"
-        echo -e "\t     ALL\t\t$TRIM_LIMIT"
-        echo -e "\n\tUser Limits"
-        echo -e "\t---------------"
-    else
-        echo -e "\t$LIMIT"
-    fi
+    echo -e "\n\tALL\t\t$TRIM_LIMIT"
+done
+    
+echo -e "\n\tUser Limits"
+echo -e "\t---------------"
+for LIMIT in $(sacctmgr show user $USER format=partition,grptres%30 --ass --noheader | sort | uniq); do
+    PART=$(echo $LIMIT | awk '{print $1}' | sed 's/ //g')
+    TRES=$(echo $LIMIT | awk '{print $2}' | sed 's/ //g')
+    echo -e "\t$PART\t\t$TRES"
 done
 
-#sacctmgr show account operations --ass format=Partition,GrpTRES%30 --noheader | sed "s/$SGROUP.*//g" | sed "s/\sgpu.*//g" | sort | uniq
