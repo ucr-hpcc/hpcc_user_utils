@@ -9,7 +9,7 @@ import numpy as np
 import io
 #for checking if username exist
 import pwd
-import os
+import getpass
 from collections import OrderedDict
 #for parsing argument
 import sys
@@ -218,7 +218,7 @@ def get_partition ( user_group_partition = None):
   if not user_group_partition:
     #sacctmgr show user username format=partition --ass --noheader
     #get a list of partition the current user has
-    partitions, partitions_error = subprocess.Popen(['sacctmgr', 'show', 'user', os.getlogin(), 'format=partition', '--ass', '--noheader'], stdout=subprocess.PIPE, universal_newlines=True).communicate()
+    partitions, partitions_error = subprocess.Popen(['sacctmgr', 'show', 'user', getpass.getuser(), 'format=partition', '--ass', '--noheader'], stdout=subprocess.PIPE, universal_newlines=True).communicate()
   elif is_user( user_group_partition ):
     partitions, partitions_error = subprocess.Popen(['sacctmgr', 'show', 'user', user_group_partition, 'format=partition', '--ass', '--noheader'], stdout=subprocess.PIPE, universal_newlines=True).communicate()
   # we assume that partition and groups are the same thing
