@@ -16,15 +16,15 @@ import sys
 if len(sys.argv) == 1 or sys.argv[1] != "-h" or sys.argv[1] != "--help":
   # bash command so it does not need to be run multiple time
   #scontrol -a show node -o
-  scontrol, scontrol_error = subprocess.Popen(['/opt/linux/centos/7.x/x86_64/pkgs/slurm/19.05.0/bin/scontrol', '-a', 'show', 'node', '-o'], stdout=subprocess.PIPE, universal_newlines=True).communicate()
+  scontrol, scontrol_error = subprocess.Popen(['scontrol', '-a', 'show', 'node', '-o'], stdout=subprocess.PIPE, universal_newlines=True).communicate()
 
   #used to get username that is running on the 
   #sacct -n --delimiter "|" --parsable2 --allusers --format User,NodeList,Partition,AllocGRES,AllocTRES,State
-  sacct, sacct_error = subprocess.Popen(['/opt/linux/centos/7.x/x86_64/pkgs/slurm/19.05.0/bin/sacct', '-n', '--delimiter', '"|"', '--parsable2', '--allusers', '--format', 'User,NodeList,Partition,AllocGRES,AllocTRES,State'], stdout=subprocess.PIPE, universal_newlines=True).communicate()
+  sacct, sacct_error = subprocess.Popen(['sacct', '-n', '--delimiter', '"|"', '--parsable2', '--allusers', '--format', 'User,NodeList,Partition,AllocTRES,State'], stdout=subprocess.PIPE, universal_newlines=True).communicate()
   sacct = sacct.replace('"', '')
   list_of_jobs = np.genfromtxt(io.StringIO(sacct), delimiter="|", dtype="U")
   #return all running jobs
-  running_jobs = list_of_jobs[np.where(list_of_jobs[:,5]=='RUNNING')]
+  running_jobs = list_of_jobs[np.where(list_of_jobs[:,4]=='RUNNING')]
 
 def node( user_group_partition = None ):
   partitions = get_partition ( user_group_partition )
@@ -148,15 +148,15 @@ def job_history ( user_group_partition = None ):
     counter = 1
     for user in unique_user:
       user_list_of_jobs = partition_jobs[np.where(partition_jobs[:,0]==user)]
-      cancelled = np.where(user_list_of_jobs[:,5]=="CANCELLED")[0].size
-      completed = np.where(user_list_of_jobs[:,5]=="COMPLETED")[0].size
-      failed = np.where(user_list_of_jobs[:,5]=="FAILED")[0].size
-      node_fail = np.where(user_list_of_jobs[:,5]=="NODE_FAIL")[0].size
-      out_of_memory = np.where(user_list_of_jobs[:,5]=="OUT_OF_MEMORY")[0].size
-      pending = np.where(user_list_of_jobs[:,5]=="PENDING")[0].size
-      running = np.where(user_list_of_jobs[:,5]=="RUNNING")[0].size
-      suspended = np.where(user_list_of_jobs[:,5]=="SUSPENDED")[0].size
-      timeout = np.where(user_list_of_jobs[:,5]=="TIMEOUT")[0].size
+      cancelled = np.where(user_list_of_jobs[:,4]=="CANCELLED")[0].size
+      completed = np.where(user_list_of_jobs[:,4]=="COMPLETED")[0].size
+      failed = np.where(user_list_of_jobs[:,4]=="FAILED")[0].size
+      node_fail = np.where(user_list_of_jobs[:,4]=="NODE_FAIL")[0].size
+      out_of_memory = np.where(user_list_of_jobs[:,4]=="OUT_OF_MEMORY")[0].size
+      pending = np.where(user_list_of_jobs[:,4]=="PENDING")[0].size
+      running = np.where(user_list_of_jobs[:,4]=="RUNNING")[0].size
+      suspended = np.where(user_list_of_jobs[:,4]=="SUSPENDED")[0].size
+      timeout = np.where(user_list_of_jobs[:,4]=="TIMEOUT")[0].size
       if pending == suspended == completed == cancelled == failed == timeout == node_fail == out_of_memory == running == 0:
         continue
       print ( "{0:3} {1:19} {2:7} {3:9} {4:9} {5:9} {6:6} {7:7} {8:9} {9:13} {10:7}".format(counter, user, pending, suspended, completed, cancelled, failed, timeout, node_fail, out_of_memory, running) )
@@ -207,7 +207,7 @@ def is_user ( user ):
 
 def is_partition ( partition ):
   #sinfo -p partition --noheader
-  partitions, partitions_error = subprocess.Popen(['/opt/linux/centos/7.x/x86_64/pkgs/slurm/19.05.0/bin/sinfo', '-p', partition, '--noheader'], stdout=subprocess.PIPE, universal_newlines=True).communicate()
+  partitions, partitions_error = subprocess.Popen(['sinfo', '-p', partition, '--noheader'], stdout=subprocess.PIPE, universal_newlines=True).communicate()
   #if sinfo returns nothing, then this is not a partition
   if not partitions:
     return False
@@ -218,9 +218,9 @@ def get_partition ( user_group_partition = None):
   if not user_group_partition:
     #sacctmgr show user username format=partition --ass --noheader
     #get a list of partition the current user has
-    partitions, partitions_error = subprocess.Popen(['/opt/linux/centos/7.x/x86_64/pkgs/slurm/19.05.0/bin/sacctmgr', 'show', 'user', os.getlogin(), 'format=partition', '--ass', '--noheader'], stdout=subprocess.PIPE, universal_newlines=True).communicate()
+    partitions, partitions_error = subprocess.Popen(['sacctmgr', 'show', 'user', os.getlogin(), 'format=partition', '--ass', '--noheader'], stdout=subprocess.PIPE, universal_newlines=True).communicate()
   elif is_user( user_group_partition ):
-    partitions, partitions_error = subprocess.Popen(['/opt/linux/centos/7.x/x86_64/pkgs/slurm/19.05.0/bin/sacctmgr', 'show', 'user', user_group_partition, 'format=partition', '--ass', '--noheader'], stdout=subprocess.PIPE, universal_newlines=True).communicate()
+    partitions, partitions_error = subprocess.Popen(['sacctmgr', 'show', 'user', user_group_partition, 'format=partition', '--ass', '--noheader'], stdout=subprocess.PIPE, universal_newlines=True).communicate()
   # we assume that partition and groups are the same thing
   # no point to use the group if they do not have any partition(s)
   elif is_partition( user_group_partition ):
