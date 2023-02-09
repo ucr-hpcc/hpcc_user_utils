@@ -37,6 +37,16 @@ if [[ "$#" -gt 4 ]] || [[ "$#" -lt 1 ]]; then
     help
 fi
 
+# Determine path for lsof
+if [[ -n $(which lsof) ]]; then
+    LSOF=$(which lsof)
+elif [[ -x /sbin/lsof ]]; then
+    LSOF=/sbin/lsof
+else
+    LSOF=false
+    echo "WARNING: lsof not found. Can not check for open files on encrypted mounts."
+fi
+
 # Load module for variable names and software
 module load gocryptfs
 
@@ -171,7 +181,7 @@ if [[ "${SUBCMD}" == "close" ]]; then
 
     DATA_DIR=$2
     if [[ -d ${UNENCRYPTED}/${DATA_DIR} ]]; then
-        OFILES=$(/sbin/lsof +D ${UNENCRYPTED}/${DATA_DIR} || cat /dev/null)
+        OFILES=$(${LSOF} +D ${UNENCRYPTED}/${DATA_DIR} || cat /dev/null)
 
         if [[ -z ${OFILES} ]]; then
             fusermount -u ${UNENCRYPTED}/${DATA_DIR}
@@ -190,7 +200,7 @@ fi
 # Umount and remove all empty dirs
 if [[ "${SUBCMD}" == "quit" ]]; then
     for dir in $(find ${UNENCRYPTED}/* -maxdepth 0 -type d -printf '%f\n'); do
-        OFILES=$(/sbin/lsof +D ${UNENCRYPTED}/$dir || cat /dev/null)
+        OFILES=$(${LSOF} +D ${UNENCRYPTED}/$dir || cat /dev/null)
 
         if [[ -z ${OFILES} ]]; then
             fusermount -u ${UNENCRYPTED}/$dir
