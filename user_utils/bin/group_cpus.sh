@@ -3,7 +3,7 @@
 # Check total number of cores used by your group in the all partitions
 
 source /etc/profile.d/modules.sh
-module load slurm/19.05.0
+module load slurm
 
 if [[ -z $1 ]]; then
     GROUP=$(id -gn)
