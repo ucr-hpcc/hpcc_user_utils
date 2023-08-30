@@ -7,16 +7,10 @@ echo -e "==============="
 echo "Slurm Limits"
 echo -e "==============="
 
-#echo """
-#Group limits are applied across all users within a lab across all partitions.
-#TOTAL designates the maximum resources allowed for a user's jobs within a partition.
-#PER JOB is the total amount of resources a single job can request.
-#A blank entry implies no limit, but will still be limited by the next higher limit.
-#  Eg. No PER JOB limit will still be limited by TOTAL. No TOTAL limit will
-#  still be limited by a Groups' TOTAL.
-#Resource requests that cause total usage to exceed TOTAL will be queued until
-#resources become available.
-#"""
+echo """
+Please refer to out website for more detail quotas:
+https://hpcc.ucr.edu/manuals/hpc_cluster/queue/
+"""
 
 for LIMIT in $(sacctmgr show account $SGROUP parent=ucr --assoc format=grptres%30 --noheader -p | sort | uniq); do
   GROUP_LIMITS="Group|ALL|$(echo $LIMIT | awk -F'|' '{print $1}')||"
