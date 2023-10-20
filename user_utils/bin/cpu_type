@@ -1,7 +1,17 @@
 #!/bin/bash
 
 function cputype {
-    declare -A CPU_TYPES=( ["E5-2683"]="intel" ["6376"]="amd" ["5220R"]="xeon" ["7502"]="ryzen" ["E5-2630"]="gpu" ["E5-2650"]="gpu" ["E5-4620"]="highmem" ["6320"]="head")
+    declare -A CPU_TYPES
+    CPU_TYPES["E5-2683"]="intel"
+    CPU_TYPES["6376"]="amd"
+    CPU_TYPES["5220R"]="xeon"
+    CPU_TYPES["7502"]="ryzen"
+    CPU_TYPES["7713"]="epyc"
+    CPU_TYPES["E5-2630"]="gpu"
+    CPU_TYPES["E5-2650"]="gpu"
+    CPU_TYPES["7543"]="gpu"
+    CPU_TYPES["E5-4620"]="highmem"
+    CPU_TYPES["6320"]="head"
 
     TYPE=$(lscpu | grep -Po '^Model name:\K.*')
 
