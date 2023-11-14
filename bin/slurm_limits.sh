@@ -25,6 +25,10 @@ for LIMIT in $(sacctmgr show user $USER format=partition,grptres%30,maxtresperjo
   USER_LIMITS=$(echo -e "${USER_LIMITS}\nUser|$PART|$TOT|$PERJOB|$MAX")
 done
 
-SLURM_LIMITS="${GROUP_LIMITS}\n${USER_LIMITS}"
+#SLURM_LIMITS="${GROUP_LIMITS}\n${USER_LIMITS}"
 
-echo -e "$SLURM_LIMITS" | column -o '   ' -t --separator='|' --table-columns 'TYPE,PARTITION,TOTAL,PER JOB,MAXSUBMIT'
+echo -e "$GROUP_LIMITS" | column -o '   ' -t --separator='|' --table-columns 'TYPE,PARTITION,PER LAB'
+
+echo -e ""
+
+echo -e "$USER_LIMITS" | column -o '   ' -t --separator='|' --table-columns 'TYPE,PARTITION,PER USER,PER JOB,MAXSUBMIT'
